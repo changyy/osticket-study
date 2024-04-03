@@ -53,6 +53,9 @@ ADD www.conf /etc/php/8.1/fpm/pool.d/
 ADD cron-dev.php /var/www/osticket-v1.18.1/api/
 RUN chown -R www-data:www-data /var/www/osticket-v1.18.1/api/
 
+
+ADD mimeDecode.php /var/www/osticket-v1.18.1/include/pear/Mail/
+
 EXPOSE 80
 EXPOSE 22
 EXPOSE 3306

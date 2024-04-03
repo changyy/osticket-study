@@ -25,9 +25,9 @@ RUN apt-get update && apt-get install -y \
     mysql-server \
     && rm -rf /var/lib/apt/lists/*
 
-RUN wget https://github.com/osTicket/osTicket/releases/download/v1.18.1/osTicket-v1.18.1.zip -O /tmp/osticket.zip \
+RUN wget https://github.com/changyy/osTicket/archive/refs/heads/develop.zip -O /tmp/osticket.zip \
     && unzip /tmp/osticket.zip -d /var/www/ \
-    && mv /var/www/upload /var/www/osticket-v1.18.1 \
+    && mv /var/www/osTicket-develop /var/www/osticket-v1.18.1 \
     && cp /var/www/osticket-v1.18.1/include/ost-sampleconfig.php /var/www/osticket-v1.18.1/include/ost-config.php \
     && chown -R www-data:www-data /var/www/osticket-v1.18.1 \
     && rm /tmp/osticket.zip
