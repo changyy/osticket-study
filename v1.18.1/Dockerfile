@@ -52,6 +52,7 @@ RUN ln -s /etc/nginx/sites-available/osticket-v1.18.1.conf /etc/nginx/sites-enab
 
 ADD tools/cron-dev.php /var/www/osticket-v1.18.1/api/
 ADD tools/test-mailparser.php /var/www/osticket-v1.18.1/api/
+ADD tools/test-mimeDecode.php /var/www/osticket-develop/api/
 RUN chown -R www-data:www-data /var/www/osticket-v1.18.1/api/
 
 EXPOSE 80

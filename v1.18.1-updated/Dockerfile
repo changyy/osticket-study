@@ -25,22 +25,54 @@ RUN apt-get update && apt-get install -y \
     mysql-server \
     && rm -rf /var/lib/apt/lists/*
 
-RUN wget https://github.com/osTicket/osTicket/releases/download/v1.18.1/osTicket-v1.18.1.zip -O /tmp/osticket.zip \
-    && unzip /tmp/osticket.zip -d /var/www/ \
+ADD nginx/www.conf /etc/php/8.1/fpm/pool.d/
+RUN rm /etc/nginx/sites-enabled/default
+
+# v1.18.1 branch
+
+RUN wget https://github.com/osTicket/osTicket/releases/download/v1.18.1/osTicket-v1.18.1.zip -O /tmp/osticket-v1.18.1.zip \
+    && unzip /tmp/osticket-v1.18.1.zip -d /var/www/ \
     && mv /var/www/upload /var/www/osticket-v1.18.1 \
     && cp /var/www/osticket-v1.18.1/include/ost-sampleconfig.php /var/www/osticket-v1.18.1/include/ost-config.php \
     && chown -R www-data:www-data /var/www/osticket-v1.18.1 \
-    && rm /tmp/osticket.zip
+    && rm /tmp/osticket-v1.18.1.zip
 
 RUN wget https://s3.amazonaws.com/downloads.osticket.com/lang/1.18.x/zh_TW.phar -O /var/www/osticket-v1.18.1/include/i18n/zh_TW.phar \
     && wget https://s3.amazonaws.com/downloads.osticket.com/lang/1.18.x/en_GB.phar -O /var/www/osticket-v1.18.1/include/i18n/en_GB.phar 
 
-RUN wget https://github.com/changyy/osTicket/archive/refs/heads/develop.zip -O /tmp/osticket.zip \
-    && unzip /tmp/osticket.zip -d /var/www/ \
+ADD tools/cron-dev.php /var/www/osticket-v1.18.1/api/
+ADD tools/test-mailparser.php /var/www/osticket-v1.18.1/api/
+ADD tools/test-mimeDecode.php /var/www/osticket-v1.18.1/api/
+RUN chown -R www-data:www-data /var/www/osticket-v1.18.1/api/
+
+ADD resource/mimeDecode.php /var/www/osticket-v1.18.1/include/pear/Mail/mimeDecode-v2015.php
+RUN mv /var/www/osticket-v1.18.1/include/pear/Mail/mimeDecode.php /var/www/osticket-v1.18.1/include/pear/Mail/mimeDecode-v2006.php
+RUN ln -s /var/www/osticket-v1.18.1/include/pear/Mail/mimeDecode-v2015.php /var/www/osticket-v1.18.1/include/pear/Mail/mimeDecode.php
+
+ADD nginx/osticket-v1.18.1_nginx.conf /etc/nginx/sites-available/osticket-v1.18.1.conf
+RUN ln -s /etc/nginx/sites-available/osticket-v1.18.1.conf /etc/nginx/sites-enabled/
+
+# develop branch
+
+RUN wget https://github.com/osTicket/osTicket/archive/refs/heads/develop.zip -O /tmp/osticket-develop.zip \
+    && unzip /tmp/osticket-develop.zip -d /var/www/ \
     && mv /var/www/osTicket-develop /var/www/osticket-develop \
     && cp /var/www/osticket-develop/include/ost-sampleconfig.php /var/www/osticket-develop/include/ost-config.php \
     && chown -R www-data:www-data /var/www/osticket-develop \
-    && rm /tmp/osticket.zip
+    && rm /tmp/osticket-develop.zip
+
+ADD tools/cron-dev.php /var/www/osticket-develop/api/
+ADD tools/test-mailparser.php /var/www/osticket-develop/api/
+ADD tools/test-mimeDecode.php /var/www/osticket-develop/api/
+RUN chown -R www-data:www-data /var/www/osticket-develop/api/
+
+ADD resource/mimeDecode.php /var/www/osticket-develop/include/pear/Mail/mimeDecode-v2015.php
+RUN mv /var/www/osticket-develop/include/pear/Mail/mimeDecode.php /var/www/osticket-develop/include/pear/Mail/mimeDecode-v2006.php
+RUN ln -s /var/www/osticket-develop/include/pear/Mail/mimeDecode-v2015.php /var/www/osticket-develop/include/pear/Mail/mimeDecode.php
+
+ADD nginx/osticket-develop_nginx.conf /etc/nginx/sites-available/osticket-develop.conf
+
+# db server
 
 RUN service mysql start && \
     mysql -e "CREATE USER 'developer'@'%' IDENTIFIED BY '12345678';" && \
@@ -50,32 +82,8 @@ RUN service mysql start && \
     mysql -e "GRANT ALL PRIVILEGES ON osticket_dev.* TO 'developer'@'%';" && \
     mysql -e "FLUSH PRIVILEGES;" 
 
-ADD nginx/www.conf /etc/php/8.1/fpm/pool.d/
-RUN rm /etc/nginx/sites-enabled/default
-ADD nginx/osticket-v1.18.1_nginx.conf /etc/nginx/sites-available/osticket-v1.18.1.conf
-RUN ln -s /etc/nginx/sites-available/osticket-v1.18.1.conf /etc/nginx/sites-enabled/
-
-ADD nginx/osticket-develop_nginx.conf /etc/nginx/sites-available/osticket-develop.conf
-
-ADD tools/test-mailparser.php /var/www/osticket-v1.18.1/api/
-ADD tools/cron-dev.php /var/www/osticket-v1.18.1/api/
-RUN chown -R www-data:www-data /var/www/osticket-v1.18.1/api/
-
-ADD tools/cron-dev.php /var/www/osticket-develop/api/
-ADD tools/test-mailparser.php /var/www/osticket-develop/api/
-RUN chown -R www-data:www-data /var/www/osticket-develop/api/
-
-ADD resource/mimeDecode.php /var/www/osticket-v1.18.1/include/pear/Mail/mimeDecode-v2015.php
-RUN mv /var/www/osticket-v1.18.1/include/pear/Mail/mimeDecode.php /var/www/osticket-v1.18.1/include/pear/Mail/mimeDecode-v2006.php
-RUN ln -s /var/www/osticket-v1.18.1/include/pear/Mail/mimeDecode-v2015.php /var/www/osticket-v1.18.1/include/pear/Mail/mimeDecode.php
-
-ADD resource/mimeDecode.php /var/www/osticket-develop/include/pear/Mail/mimeDecode-v2015.php
-RUN mv /var/www/osticket-develop/include/pear/Mail/mimeDecode.php /var/www/osticket-develop/include/pear/Mail/mimeDecode-v2006.php
-RUN ln -s /var/www/osticket-develop/include/pear/Mail/mimeDecode-v2015.php /var/www/osticket-develop/include/pear/Mail/mimeDecode.php
-
 EXPOSE 80
 EXPOSE 22
 EXPOSE 3306
 
 CMD service mysql start && service php8.1-fpm start && service nginx start && tail -f /var/log/nginx/access.log /var/log/nginx/error.log;
-

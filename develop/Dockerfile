@@ -25,7 +25,7 @@ RUN apt-get update && apt-get install -y \
     mysql-server \
     && rm -rf /var/lib/apt/lists/*
 
-RUN wget https://github.com/changyy/osTicket/archive/refs/heads/develop.zip -O /tmp/osticket.zip \
+RUN wget https://github.com/osTicket/osTicket/archive/refs/heads/develop.zip -O /tmp/osticket.zip \
     && unzip /tmp/osticket.zip -d /var/www/ \
     && mv /var/www/osTicket-develop /var/www/osticket-develop \
     && cp /var/www/osticket-develop/include/ost-sampleconfig.php /var/www/osticket-develop/include/ost-config.php \
@@ -47,6 +47,7 @@ ADD nginx/www.conf /etc/php/8.1/fpm/pool.d/
 
 ADD tools/cron-dev.php /var/www/osticket-develop/api/
 ADD tools/test-mailparser.php /var/www/osticket-develop/api/
+ADD tools/test-mimeDecode.php /var/www/osticket-develop/api/
 RUN chown -R www-data:www-data /var/www/osticket-develop/api/
 
 EXPOSE 80
