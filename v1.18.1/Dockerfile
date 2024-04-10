@@ -25,9 +25,9 @@ RUN apt-get update && apt-get install -y \
     mysql-server \
     && rm -rf /var/lib/apt/lists/*
 
-RUN wget https://github.com/changyy/osTicket/archive/refs/heads/develop.zip -O /tmp/osticket.zip \
+RUN wget https://github.com/osTicket/osTicket/releases/download/v1.18.1/osTicket-v1.18.1.zip -O /tmp/osticket.zip \
     && unzip /tmp/osticket.zip -d /var/www/ \
-    && mv /var/www/osTicket-develop /var/www/osticket-v1.18.1 \
+    && mv /var/www/upload /var/www/osticket-v1.18.1 \
     && cp /var/www/osticket-v1.18.1/include/ost-sampleconfig.php /var/www/osticket-v1.18.1/include/ost-config.php \
     && chown -R www-data:www-data /var/www/osticket-v1.18.1 \
     && rm /tmp/osticket.zip
@@ -44,13 +44,14 @@ RUN service mysql start && \
     mysql -e "GRANT ALL PRIVILEGES ON osticket_dev.* TO 'developer'@'%';" && \
     mysql -e "FLUSH PRIVILEGES;" 
 
+ADD nginx/www.conf /etc/php/8.1/fpm/pool.d/
 RUN rm /etc/nginx/sites-enabled/default
-ADD osticket-v1.18.1_nginx.conf /etc/nginx/sites-available/osticket-v1.18.1.conf
+
+ADD nginx/osticket-v1.18.1_nginx.conf /etc/nginx/sites-available/osticket-v1.18.1.conf
 RUN ln -s /etc/nginx/sites-available/osticket-v1.18.1.conf /etc/nginx/sites-enabled/
 
-ADD www.conf /etc/php/8.1/fpm/pool.d/
-
-ADD cron-dev.php /var/www/osticket-v1.18.1/api/
+ADD tools/cron-dev.php /var/www/osticket-v1.18.1/api/
+ADD tools/test-mailparser.php /var/www/osticket-v1.18.1/api/
 RUN chown -R www-data:www-data /var/www/osticket-v1.18.1/api/
 
 EXPOSE 80

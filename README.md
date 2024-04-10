@@ -3,14 +3,17 @@
 ## Build Docker Image
 
 ```
-% cd docker
-% docker build -t osticket-dev:1.18.1 . 
+% docker build -t osticket-dev:v1.18.1 -f v1.18.1/Dockerfile .
+% docker build -t osticket-dev:develop -f develop/Dockerfile .
+% docker build -t osticket-dev:v1.18.1-updated -f v1.18.1-updated/Dockerfile .
 ```
 
 ## Running the Docker Container - All Nginx logs are directed to stdout
 
 ```
-% docker run -it -p 80:80 -p 3306:3306 osticket-dev:1.18.1
+% docker run -it -p 80:80 -p 3306:3306 osticket-dev:v1.18.1
+% docker run -it -p 80:80 -p 3306:3306 osticket-dev:develop
+% docker run -it -p 80:80 -p 3306:3306 osticket-dev:v1.18.1-updated
 ```
 
 ## Running the Docker Container - Start in a Bash shell
