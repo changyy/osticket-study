@@ -72,7 +72,7 @@ require_once(INCLUDE_DIR.'api.cron.php');
         	}
                 echo "messages: ".print_r($messages, true)."\n";
 		foreach ($messages as $i) {
-		    echo "Download eamil: $i\n";
+		    echo "Download email: $i\n";
 		    // class.mail.php
 		    // echo $mbox->getRawEmail($i)."\n";
 		    echo "bin2hex(substr(getRawHeader, -4)):    ".bin2hex(substr($mbox->getRawHeader($i), -4))."\n";
