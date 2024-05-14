@@ -48,6 +48,7 @@ ADD nginx/www.conf /etc/php/8.1/fpm/pool.d/
 ADD tools/cron-dev.php /var/www/osticket-develop/api/
 ADD tools/test-mailparser.php /var/www/osticket-develop/api/
 ADD tools/test-mimeDecode.php /var/www/osticket-develop/api/
+ADD tools/test-mailDownload.php /var/www/osticket-develop/api/
 RUN chown -R www-data:www-data /var/www/osticket-develop/api/
 
 EXPOSE 80
