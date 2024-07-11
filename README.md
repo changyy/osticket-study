@@ -3,8 +3,108 @@
 ## Build Docker Image
 
 ```
-% docker build -t osticket-dev:v1.18.1 -f v1.18.1/Dockerfile .
 % docker build -t osticket-dev:develop -f develop/Dockerfile .
+```
+
+## Running the Docker Container - All Nginx logs are directed to stdout
+
+```
+% docker run -it -p 80:80 -p 3306:3306 osticket-dev:develop
+```
+
+## Running the Docker Container - Start in a Bash shell
+
+```
+% docker run -it -p 80:80 -p 3306:3306 osticket-dev:develop /bin/bash
+root@:/# service mysql start ; service php8.1-fpm start ; service nginx start
+ * Starting MySQL database server mysqld
+   su: warning: cannot change directory to /nonexistent: No such file or directory
+                                                                                    [ OK ]
+ * Starting nginx nginx                                                             [ OK ]
+root@:/# tail -f /var/log/nginx/*.log
+==> /var/log/nginx/error.log <==
+
+==> /var/log/nginx/access.log <==
+```
+
+## Use the Docker volume option to mount and overwrite the source code in the image, facilitating easier development and testing.
+
+### Optional: Clean up the source code directory
+
+```
+% cd ./tmp/my-osticket-src
+% git clean -x -d -f
+% cp include/ost-sampleconfig.php include/ost-config.php
+% cd - 
+```
+
+### Running the Docker Container with the volume option
+
+```
+% docker run -it -p 80:80 -p 3306:3306 -v ./tmp/my-osticket-src:/var/www/osticket-develop osticket-dev:develop
+```
+
+## Setting up osTicket
+
+### Installation
+
+Navigate to http://localhost/ and follow the setup instructions.
+
+Be cautious with the MySQL database settings. The default settings are:
+
+  - DB Host: 127.0.0.1
+  - DB Name: osticket_dev
+  - DB User: developer
+  - DB Password: 12345678
+
+Note: Using `localhost` as DB Host does not work (`PHP Fatal error: Uncaught mysqli_sql_exception: Permission denied`).
+
+## Database Access
+
+### PHPMyAdmin
+
+To access the database via PHPMyAdmin, navigate to http://localhost/phpmyadmin and log in with the following credentials:
+
+  - Username: developer
+  - Password: 12345678
+
+### Using MySQL Client via SSH Tunnel
+
+server account:
+
+  - Username: developer
+  - Password: 12345678
+
+#### SSH Tunnel
+
+```
+% docker run -it -p 20022:22 -p 80:80 -p 3306:3306 -v ./tmp/my-osticket-src:/var/www/osticket-develop osticket-dev:develop
+$ ssh -N -p 20022 -L 23306:127.0.0.1:3306 developer@localhost
+password: 12345678
+```
+
+#### macOS mysql client via Python mycli tool
+
+```
+% python3 -m venv /tmp/venv
+% source /tmp/venv/bin/activate
+(venv) /tmp % pip install mycli
+(venv) /tmp % mycli -h 127.0.0.1 -P 23306 -u developer -p 12345678
+% mycli -h 127.0.0.1 -P 23306 -u developer -p 12345678
+MySQL 8.0.37
+mycli 1.27.2
+Home: http://mycli.net
+Bug tracker: https://github.com/dbcli/mycli/issues
+Thanks to the contributor - Colin Caine
+MySQL developer@127.0.0.1:(none)>
+```
+
+---
+
+# osTicket Docker Development Environment v1.18.1 Usage
+
+```
+% docker build -t osticket-dev:v1.18.1 -f v1.18.1/Dockerfile .
 % docker build -t osticket-dev:v1.18.1-updated -f v1.18.1-updated/Dockerfile .
 ```
 
@@ -12,7 +112,6 @@
 
 ```
 % docker run -it -p 80:80 -p 3306:3306 osticket-dev:v1.18.1
-% docker run -it -p 80:80 -p 3306:3306 osticket-dev:develop
 % docker run -it -p 80:80 -p 3306:3306 osticket-dev:v1.18.1-updated
 ```
 

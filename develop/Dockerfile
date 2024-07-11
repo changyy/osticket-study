@@ -22,6 +22,8 @@ RUN apt-get update && apt-get install -y \
     vim \
     wget \
     unzip \
+    tree \
+    openssh-server \
     mysql-server \
     && rm -rf /var/lib/apt/lists/*
 
@@ -31,6 +33,19 @@ RUN wget https://github.com/osTicket/osTicket/archive/refs/heads/develop.zip -O 
     && cp /var/www/osticket-develop/include/ost-sampleconfig.php /var/www/osticket-develop/include/ost-config.php \
     && chown -R www-data:www-data /var/www/osticket-develop \
     && rm /tmp/osticket.zip
+
+# PHPMyAdmin
+RUN wget https://www.phpmyadmin.net/downloads/phpMyAdmin-latest-all-languages.tar.gz -O /tmp/phpmyadmin.tar.gz \
+    && cd /tmp && tar -xvzf phpmyadmin.tar.gz \
+    && mv phpMyAdmin-*-all-languages /var/www/osticket-develop/phpmyadmin \
+    && cp /var/www/osticket-develop/phpmyadmin/config.sample.inc.php /var/www/osticket-develop/phpmyadmin/config.inc.php \
+    && sed -i "s/\$cfg\['Servers'\]\[\$i\]\['host'\] = 'localhost';/\$cfg\['Servers'\]\[\$i\]\['host'\] = '127.0.0.1';/" /var/www/osticket-develop/phpmyadmin/config.inc.php \
+    && mkdir -p /var/www/osticket-develop/phpmyadmin/tmp \
+    && chown -R www-data:www-data /var/www/osticket-develop/phpmyadmin \
+    && rm /tmp/phpmyadmin.tar.gz
+
+# SSH Tunnel Usage
+RUN useradd -m developer && echo "developer:12345678" | chpasswd
 
 RUN service mysql start && \
     mysql -e "CREATE USER 'developer'@'%' IDENTIFIED BY '12345678';" && \
@@ -55,4 +70,4 @@ EXPOSE 80
 EXPOSE 22
 EXPOSE 3306
 
-CMD service mysql start && service php8.1-fpm start && service nginx start && tail -f /var/log/nginx/access.log /var/log/nginx/error.log;
+CMD service ssh start && service mysql start && service php8.1-fpm start && service nginx start && tail -f /var/log/nginx/access.log /var/log/nginx/error.log;
